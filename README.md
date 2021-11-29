@@ -10,8 +10,12 @@ Dickson, S10192803
 
 3. Instructions for setting up and running the microservice
 3.1 Setting up database
-- Download MySQL Community Edition
-- use terminal and type go get "github.com/go-sql-driver/mysql"
+- Download XAMPP
+- Go to PHPMyAdmin
+- Create new database 
+- Insert SQL code 
+- Click 'GO'
 
 Lib used
 1. https://github.com/gorilla/mux
+2. XAMPP
