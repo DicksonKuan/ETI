@@ -1,0 +1,11 @@
+//Test API working
+curl http://localhost:4000/api/v1/Driver
+
+//GET
+curl -H "Content-Type:application/json" -X GET http://localhost:4000/api/v1/Driver/Router?key=2c78afaf-97da-4816-bbee-9ad239abb296 -d "{\"EmailAddress\":\"ethan.leong@gmail.com\",\"Password\":\"password\"}"
+
+//POST
+curl -H "Content-Type:application/json" -X POST http://localhost:4000/api/v1/Driver/Router?key=2c78afaf-97da-4816-bbee-9ad239abb296 -d "{\"DriverID\":5,\"FirstName\":\"Ethan\",\"LastName\":\"Leong\",\"MobileNumber\":\"87333910\",\"EmailAddress\":\"ethan.leong@gmail.com\",\"CarLicenseNumber\":\"S111IL\",\"Password\":\"password\"}"
+
+//PUT
+curl -H "Content-Type: application/json" -X PUT http://localhost:4000/api/v1/Driver/Router?key=2c78afaf-97da-4816-bbee-9ad239abb296 -d "{\"DriverID\":3,\"FirstName\":\"Elvan\",\"LastName\":\"Leong\",\"MobileNumber\":\"87333911\",\"EmailAddress\":\"ethan.leong@gmail.com\",\"CarLicenseNumber\":\"S101IL\",\"Password\":\"password\"}"

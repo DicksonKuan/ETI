@@ -1,0 +1,13 @@
+//Test API working
+curl http://localhost:3000/api/v1/Trip
+
+curl http://localhost:3000/api/v1/Trip/1?key=2c78afaf-97da-4816-bbee-9ad239abb296
+
+//GET
+curl -H "Content-Type:application/json" -X GET http://localhost:3000/api/v1/Trip/Router?key=2c78afaf-97da-4816-bbee-9ad239abb296 -d "{\"TripID\":5"}"
+
+//POST
+curl -H "Content-Type:application/json" -X POST http://localhost:3000/api/v1/Trip/Router?key=2c78afaf-97da-4816-bbee-9ad239abb296 -d "{\"CustomerID\":1,\"DriverID\":3,\"PickUpLocation\":\"123456\",\"DropOffLocation\":\"123457\",\"PickUpTime\":\"23:00\",\"Status\":\"Pending\"}"
+
+//PUT
+curl -H "Content-Type: application/json" -X PUT http://localhost:3000/api/v1/Trip/Router?key=2c78afaf-97da-4816-bbee-9ad239abb296 -d "{\"CustomerID\":1,\"DriverID\":3,\"TripID\":4,\"PickUpLocation\":\"123456\",\"DropOffLocation\":\"123457\",\"PickUpTime\":\"23:00\",\"Status\":\"Completed\",\"DropOffTime\":\"23:30\"}"
