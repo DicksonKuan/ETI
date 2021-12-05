@@ -7,8 +7,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
+	handlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -42,7 +44,23 @@ func CheckUser(db *sql.DB, email string) bool {
 	}
 	return false
 }
-
+func GetUserWithEmail(db *sql.DB, email string) int {
+	query := fmt.Sprintf("Select * FROM Customer WHERE EmailAddress= '%s'", email)
+	results, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+	var customer Customer
+	for results.Next() {
+		// map this type to the record in the table
+		err = results.Scan(&customer.ID, &customer.FirstName,
+			&customer.LastName, &customer.MobileNumber, &customer.EmailAddress, &customer.Password)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+	return customer.ID
+}
 func GetUser(db *sql.DB, email string, password string) Customer {
 	query := fmt.Sprintf("Select * FROM Customer WHERE EmailAddress= '%s' AND Password= '%s'", email, password)
 	results, err := db.Query(query)
@@ -97,10 +115,8 @@ func DeleteUser(db *sql.DB, customer Customer) bool {
 }
 
 func EditUser(db *sql.DB, customer Customer) bool {
-	if customer.ID == 0 {
-		return false
-	}
-	query := fmt.Sprintf("UPDATE Customer SET FirstName = '%s', LastName = '%s', MobileNumber= '%s'	WHERE ID = %d;", customer.FirstName, customer.LastName, customer.MobileNumber, customer.ID)
+	query := fmt.Sprintf("UPDATE Customer SET FirstName = '%s', LastName = '%s', MobileNumber= '%s'	WHERE EmailAddress = '%s';", customer.FirstName, customer.LastName, customer.MobileNumber, customer.EmailAddress)
+	println(query)
 	_, err := db.Query(query)
 
 	if err != nil {
@@ -129,38 +145,35 @@ func APIRouter(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("401 - Invalid key"))
 		return
 	}
+	//Database
+	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
+	if err != nil {
+		fmt.Println(err)
+	}
 	if r.Method == "DELETE" {
 		println("DELETE is working")
+	} else if r.Method == "GET" { //GET User
+		params := mux.Vars(r)
+		if params["Email"] == " " || params["Password"] == " " {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			w.Write([]byte("Please provide Email or password"))
+			return
+		}
+		loginInformation := GetUser(db, params["Email"], params["Password"])
+		if loginInformation.EmailAddress != "" || loginInformation.Password != "" { // Check if data is empty
+			json.NewEncoder(w).Encode(GetUser(db, loginInformation.EmailAddress, loginInformation.Password))
+			w.WriteHeader(http.StatusAccepted)
+			return
+		} else {
+			w.WriteHeader(
+				http.StatusUnprocessableEntity)
+			w.Write([]byte(
+				"Account is invalid"))
+			return
+		}
 	}
 
 	if r.Header.Get("Content-type") == "application/json" {
-		//Database
-		db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
-		if err != nil {
-			fmt.Println(err)
-		}
-		if r.Method == "GET" { //GET User
-			var loginInformation Customer
-			reqBody, err := ioutil.ReadAll(r.Body)
-			defer r.Body.Close()
-			if err == nil {
-				err := json.Unmarshal(reqBody, &loginInformation)
-				if err != nil {
-					println(string(reqBody))
-					fmt.Printf("There was an error encoding the json. err = %s", err)
-				} else if loginInformation.EmailAddress != "" || loginInformation.Password != "" { // Check if data is empty
-					json.NewEncoder(w).Encode(GetUser(db, loginInformation.EmailAddress, loginInformation.Password))
-					w.WriteHeader(http.StatusAccepted)
-					return
-				} else {
-					w.WriteHeader(
-						http.StatusUnprocessableEntity)
-					w.Write([]byte(
-						"Account is invalid"))
-					return
-				}
-			}
-		}
 		if r.Method == "POST" {
 			var newCustomer Customer
 			reqBody, err := ioutil.ReadAll(r.Body)
@@ -196,7 +209,6 @@ func APIRouter(w http.ResponseWriter, r *http.Request) {
 			reqBody, err := ioutil.ReadAll(r.Body)
 			if err == nil {
 				json.Unmarshal(reqBody, &customerInformation)
-
 				if customerInformation.EmailAddress == "" {
 					w.WriteHeader(
 						http.StatusUnprocessableEntity)
@@ -207,11 +219,13 @@ func APIRouter(w http.ResponseWriter, r *http.Request) {
 					if !CheckUser(db, customerInformation.EmailAddress) { //To check with the database if there is any record
 						w.WriteHeader(http.StatusUnprocessableEntity)
 						w.Write([]byte("There is no exsiting account with for " + customerInformation.EmailAddress))
+						return
 					} else {
 						//To update user details
 						EditUser(db, customerInformation)
 						w.WriteHeader(http.StatusCreated)
 						w.Write([]byte("Account updated successfully"))
+						return
 					}
 				}
 			}
@@ -223,6 +237,26 @@ func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "RideShare Passenger API")
 }
 
+func CheckCustomer(w http.ResponseWriter, r *http.Request) {
+	//Database
+	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
+	if err != nil {
+		fmt.Println(err)
+	}
+	params := mux.Vars(r)
+	if params["UserEmail"] == "" {
+		w.WriteHeader(
+			http.StatusUnprocessableEntity)
+		w.Write([]byte(
+			"422 - Please supply email information"))
+		return
+	} else if CheckUser(db, params["UserEmail"]) {
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(strconv.Itoa(GetUserWithEmail(db, params["UserEmail"]))))
+	} else {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+	}
+}
 func main() {
 	// // //Database
 	// db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
@@ -260,9 +294,13 @@ func main() {
 
 	//API part
 	router := mux.NewRouter()
-	router.HandleFunc("/api/v1/Passenger", home)                                           //Test API
-	router.HandleFunc("/api/v1/Passenger/Router", APIRouter).Methods("GET", "PUT", "POST") //API Manipulation
+	headers := handlers.AllowedHeaders([]string{"X-REQUESTED-With", "Content-Type"})
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT"})
+	origins := handlers.AllowedOrigins([]string{"*"})
+	router.HandleFunc("/api/v1/CheckUser/{UserEmail}", CheckCustomer)
+	router.HandleFunc("/api/v1/Passenger", home)                                                              //Test API
+	router.HandleFunc("/api/v1/Passenger/Router/{Email}/{Password}", APIRouter).Methods("GET", "PUT", "POST") //API Manipulation
 
 	fmt.Println("Listening at port 5000")
-	log.Fatal(http.ListenAndServe(":5000", router))
+	log.Fatal(http.ListenAndServe(":5000", handlers.CORS(headers, methods, origins)(router)))
 }

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>GRAB</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Dosis:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+  #viewContent {
+      padding-left: 20px;
+  }
+
+      #viewContent select, #viewContent button {
+          font-size: 25px;
+      }
+
+      #viewContent h4 {
+          margin: 10px 0;
+      }
+
+      #viewContent .textAlignCenter {
+          text-align: center;
+      }
+
+          #viewContent .textAlignCenter img {
+              display: none;
+              width: 100px;
+          }
+
+      #viewContent #message table {
+          width: 100%;
+      }
+
+          #viewContent #message table th {
+              text-align: left;
+              text-decoration: underline;
+          }
+  </style>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<body>
+  <script type="text/javascript">
+  function APIRouter(method, type, form) {
+    event.preventDefault(); //Prevent refreshing webpage
+    const FormDataValue = new FormData(form); //Collect form data
+    var obj;
+    var url;
+    if(method == "Get All Trips"){
+      for(let [name, value] of FormDataValue) {
+        url = "http://localhost:3000/api/v1/Trip/"+value+"?key=2c78afaf-97da-4816-bbee-9ad239abb296";
+      }
+    }else if(method == "Get Trips"){
+      for(let [name, value] of FormDataValue) {
+        url = "http://localhost:3000/api/v1/Trip/Router/"+value+"?key=2c78afaf-97da-4816-bbee-9ad239abb296";
+      }
+    }else if(type == "POST" || type == "PUT"){
+      var jsonString = {}
+      if(type == "PUT"){
+        for(let [name, value] of FormDataValue) {
+          if(name == "CustomerID" || name == "TripID"){
+            jsonString[name] = parseInt(value);
+          }else{
+            jsonString[name] = value;
+          }
+        }
+        jsonString = JSON.stringify(jsonString);
+      }else{
+        jsonString = JSON.stringify(Object.fromEntries(FormDataValue)); //Convert to JSON
+      }
+      url = "http://localhost:3000/api/v1/Trip/Router/0?key=2c78afaf-97da-4816-bbee-9ad239abb296";
+      obj = jsonString;
+    }
+    $.ajax({
+        type: type,
+        url: url,
+        dataType: "json",
+        data: obj,
+        contentType: "application/json",
+        success: function (result, status, xhr) {
+            var table = $("<table><tr><th>"+method+"</th></tr>");
+            if(method == "Get All Trips"){
+              for(var k in result){
+                table.append("<tr><td>TripID:</td><td>" + result[k].TripID + "</td></tr>");
+                table.append("<tr><td>CustomerID:</td><td>" + result[k]["CustomerID"] + "</td></tr>");
+                table.append("<tr><td>DriverID:</td><td>" + result[k]["DriverID"] + "</td></tr>");
+                table.append("<tr><td>Pick up location:</td><td>" + result[k]["PickUpLocation"] + "</td></tr>");
+                table.append("<tr><td>Drop off location:</td><td>" + result[k]["DropOffLocation"] + "</td></tr>");
+                table.append("<tr><td>Pick up location:</td><td>" + result[k]["PickUpTime"] + "</td></tr>");
+                var DropOffTime = "Null"
+                if(result[k]["DropOffTime"] != " "){
+                  DropOffTime = result[k]["DropOffTime"]
+                }
+                table.append("<tr><td>Drop Off Time:</td><td>" + DropOffTime + "</td></tr>");
+                table.append("<tr><td>Status:</td><td>" + result[k]["Status"] + "</td></tr>");
+              }
+            }else if (method == "Get Trips"){
+              table.append("<tr><td>TripID:</td><td>" + result.TripID + "</td></tr>");
+              table.append("<tr><td>CustomerID:</td><td>" + result["CustomerID"] + "</td></tr>");
+              table.append("<tr><td>DriverID:</td><td>" + result["DriverID"] + "</td></tr>");
+              table.append("<tr><td>Pick up location:</td><td>" + result["PickUpLocation"] + "</td></tr>");
+              table.append("<tr><td>Drop off location:</td><td>" + result["DropOffLocation"] + "</td></tr>");
+              table.append("<tr><td>Pick up location:</td><td>" + result["PickUpTime"] + "</td></tr>");
+              var DropOffTime = "Null"
+              if(result["DropOffTime"] != " "){
+                DropOffTime = result["DropOffTime"]
+              }
+              table.append("<tr><td>Drop Off Time:</td><td>" + DropOffTime + "</td></tr>");
+              table.append("<tr><td>Status:</td><td>" + result["Status"] + "</td></tr>");
+            }
+            $("#message").html(table);
+        },
+        error: function (xhr, status, error) {
+          $("#message").empty();
+          if (type == "POST"){
+            var table = $("<table><tr><th>"+xhr.responseText+"</th></tr>");
+            $("#message").html(table);
+          }
+          else{
+            alert("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText+ " "+ xhr.responseText);
+          }
+          $("#message").show();
+        }
+    });
+  };
+  function ChangeForm(optionValue){
+    if(optionValue != "GetTrips"){
+      $(".container").hide();
+      $("#message").hide();
+      var content = "#"+optionValue.value;
+      $(content).show();
+    }
+  }
+  </script>
+  <select id="TripsOptions" onchange="ChangeForm(this)">
+    <option value="GetTrips" selected="selected">Get Trip</option>
+    <option value="GetAll">Get All Trip by passenger ID</option>
+    <option value="POST">Create Trip</option>
+    <option value="PUT">Update Trip</option>
+  </select>
+
+  <div class='container pt-5' id="GetTrips">
+    <h1>Get Trips</h1>
+    <form onsubmit="APIRouter('Get Trips','GET',this);">
+        <div class="form-group pt-3">
+          <label for="TripID">Trip ID</label>
+          <input type="text" class="form-control" name="TripID" id="TripID" placeholder="Enter tripID">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+    <div class='container pt-5' id="GetAll">
+      <h1>GET All passenger trips</h1>
+      <form onsubmit="APIRouter('Get All Trips','GET',this);">
+          <div class="form-group pt-3">
+            <label for="CustomerID">Customer ID</label>
+            <input type="text" class="form-control" name="CustomerID" id="CustomerID" placeholder="Enter PassengerID">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+      <div class='container pt-5' id="POST">
+        <h1>Create trips</h1>
+        <form onsubmit="APIRouter('Create Trips','POST',this);">
+            <div class="form-group pt-3">
+              <label for="CustomerEmail">Customer Email</label>
+              <input type="text" class="form-control" name="CustomerEmail" id="CustomerEmail" placeholder="Enter customer email" value ="Susan@np.com">
+            </div>
+            <div class="form-group pt-3">
+              <label for="PickUpLocation">Pick Up Location</label>
+              <input type="text" class="form-control" name="PickUpLocation" id="PickUpLocation" placeholder="Enter pick up location" value="1234567">
+            </div>
+            <div class="form-group pt-3">
+              <label for="DropOffLocation">Drop off Location</label>
+              <input type="text" class="form-control" name="DropOffLocation" id="DropOffLocation" placeholder="Enter drop off location" value="1234568">
+            </div>
+            <div class="form-group pt-3">
+              <label for="PickUpTime">Pick Up timing</label>
+              <input type="text" class="form-control" name="PickUpTime" id="PickUpTime" placeholder="Enter pick up timing" value="22:00">
+            </div>
+            <div class="form-group pt-3">
+              <label for="DropOffTime">Drop off timing</label>
+              <input type="text" class="form-control" name="DropOffTime" id="DropOffTime" placeholder="Enter drop off location" value="23:00">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+
+        <div class='container pt-5' id="PUT">
+          <h1>Update trips</h1>
+          <form onsubmit="APIRouter('Update Trips','PUT',this);">
+              <div class="form-group pt-3">
+                <label for="CustomerID">Customer ID</label>
+                <input type="number" class="form-control" name="CustomerID" id="CustomerID" placeholder="Enter customer ID" value =1>
+              </div>
+              <div class="form-group pt-3">
+                <label for="DriverID">Driver ID</label>
+                <input type="text" class="form-control" name="DriverID" id="DriverID" placeholder="Enter Driver ID" value="S1234567A">
+              </div>
+              <div class="form-group pt-3">
+                <label for="TripID">Trip ID</label>
+                <input type="number" class="form-control" name="TripID" id="TripID" placeholder="Enter pick up location" value=4>
+              </div>
+              <div class="form-group pt-3">
+                <label for="PickUpLocation">Pick Up Location</label>
+                <input type="text" class="form-control" name="PickUpLocation" id="PickUpLocation" placeholder="Enter pick up location" value="1234567">
+              </div>
+              <div class="form-group pt-3">
+                <label for="DropOffLocation">Drop off Location</label>
+                <input type="text" class="form-control" name="DropOffLocation" id="DropOffLocation" placeholder="Enter drop off location" value="1234568">
+              </div>
+              <div class="form-group pt-3">
+                <label for="PickUpTime">Pick Up timing</label>
+                <input type="text" class="form-control" name="PickUpTime" id="PickUpTime" placeholder="Enter pick up timing" value="22:00">
+              </div>
+              <div class="form-group pt-3">
+                <label for="DropOffTime">Drop off timing</label>
+                <input type="text" class="form-control" name="DropOffTime" id="DropOffTime" placeholder="Enter drop off location" value="23:00">
+              </div>
+              <div class="form-group pt-3">
+                <label for="Status">Status</label>
+                <input type="text" class="form-control" name="Status" id="Status" placeholder="Enter Status" value="Completed">
+              </div>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+          </div>
+<div id="message"></div>
+</body>
+<script>
+$(".container").hide();
+$("#GetTrips").show();
+</script>
+</html>

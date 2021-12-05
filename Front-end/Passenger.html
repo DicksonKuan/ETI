@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>GRAB</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Dosis:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+  #viewContent {
+      padding-left: 20px;
+  }
+
+      #viewContent select, #viewContent button {
+          font-size: 25px;
+      }
+
+      #viewContent h4 {
+          margin: 10px 0;
+      }
+
+      #viewContent .textAlignCenter {
+          text-align: center;
+      }
+
+          #viewContent .textAlignCenter img {
+              display: none;
+              width: 100px;
+          }
+
+      #viewContent #message table {
+          width: 100%;
+      }
+
+          #viewContent #message table th {
+              text-align: left;
+              text-decoration: underline;
+          }
+  </style>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script type="text/javascript">
+function APIRouter(method, type, form) {
+  event.preventDefault(); //Prevent refreshing webpage
+  const FormDataValue = new FormData(form); //Collect form data
+  var obj;
+  var url;
+  if(type == "GET"){
+    var email, password;
+    for(let [name, value] of FormDataValue) {
+      if(name == "Email"){email = value}
+      else{password = value}
+    }
+    console.log(password)
+    url = "http://localhost:5000/api/v1/Passenger/Router/"+email+"/"+password+"?key=2c78afaf-97da-4816-bbee-9ad239abb296";
+    console.log(url);
+  }else if(type == "POST" || type == "PUT"){
+    obj = JSON.stringify(Object.fromEntries(FormDataValue)); //Convert to JSON
+    url = "http:localhost:5000/api/v1/Passenger/Router/ / ?key=2c78afaf-97da-4816-bbee-9ad239abb296"
+  }
+  $.ajax({
+      type: type,
+      url: url,
+      dataType: "json",
+      data: obj,
+      contentType: "application/json",
+      success: function (result, status, xhr) {
+          var table = $("<table><tr><th>"+method+"</th></tr>");
+          if (type == "GET"){
+            table.append("<tr><td>CustomerID:</td><td>" + result.CustomerID + "</td></tr>");
+            table.append("<tr><td>First Name:</td><td>" + result["FirstName"] + "</td></tr>");
+            table.append("<tr><td>Last Name:</td><td>" + result["LastName"] + "</td></tr>");
+            table.append("<tr><td>Phone number:</td><td>" + result["MobileNumber"] + "</td></tr>");
+            table.append("<tr><td>Password:</td><td>" + result["Password"] + "</td></tr>");
+          }
+          $("#message").html(table);
+      },
+      error: function (xhr, status, error) {
+        $("#message").empty();
+        if (type == "POST" || type == "PUT"){
+          var table = $("<table><tr><th>"+xhr.responseText+"</th></tr>");
+          $("#message").html(table);
+        }
+        else{
+          alert("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText+ " "+ xhr.responseText);
+        }
+        $("#message").show();
+      }
+  });
+};
+function ChangeForm(optionValue){
+  $(".container").hide();
+  $("#message").hide();
+  var content = "#"+optionValue.value;
+  $(content).show();
+}
+</script>
+<body>
+  <select id="TripsOptions" onchange="ChangeForm(this)">
+    <option value="GET" selected="selected">Get Customer</option>
+    <option value="POST">Create Customer</option>
+    <option value="PUT">Update Customer</option>
+  </select>
+
+  <div class='container pt-5' id="GET">
+    <h1>Get Customer</h1>
+    <p>Get Customer by email and password</p>
+    <form onsubmit="APIRouter('Get customer','GET',this);">
+        <div class="form-group pt-3">
+          <label for="Email">Customer Email</label>
+          <input type="text" class="form-control" name="Email" id="Email" placeholder="Enter Email" value="Susan@np.com">
+        </div>
+        <div class="form-group pt-3">
+          <label for="Password">Password</label>
+          <input type="text" class="form-control" name="Password" id="Password" placeholder="Enter Password" value="Password">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+
+      <div class='container pt-5' id="POST">
+        <h1>Create Customer</h1>
+        <form onsubmit="APIRouter('Create Customer','POST',this);">
+            <div class="form-group pt-3">
+              <label for="EmailAddress">Customer Email</label>
+              <input type="text" class="form-control" name="EmailAddress" id="EmailAddress" placeholder="Enter Email" value ="Johnson@np.com">
+            </div>
+            <div class="form-group pt-3">
+              <label for="FirstName">First Name</label>
+              <input type="text" class="form-control" name="FirstName" id="FirstName" placeholder="Enter your first name" value="Johsnon">
+            </div>
+            <div class="form-group pt-3">
+              <label for="LastName">Last Name</label>
+              <input type="text" class="form-control" name="LastName" id="LastName" placeholder="Enter Last name" value="Sussy">
+            </div>
+            <div class="form-group pt-3">
+              <label for="MobileNumber">Phone number</label>
+              <input type="text" class="form-control" name="MobileNumber" id="MobileNumber" placeholder="Enter your phone number" value="91234530">
+            </div>
+            <div class="form-group pt-3">
+              <label for="Password">Password</label>
+              <input type="text" class="form-control" name="Password" id="Password" placeholder="Enter drop off location" value="password">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+
+        <div class='container pt-5' id="PUT">
+          <h1>Update Customer</h1>
+          <form onsubmit="APIRouter('Update Customer','PUT',this);">
+            <div class="form-group pt-3">
+              <label for="EmailAddress">Customer Email</label>
+              <input type="text" class="form-control" name="EmailAddress" id="EmailAddress" placeholder="Enter Email" value ="Johnson@np.com">
+            </div>
+            <div class="form-group pt-3">
+              <label for="FirstName">First Name</label>
+              <input type="text" class="form-control" name="FirstName" id="FirstName" placeholder="Enter your first name" value="John">
+            </div>
+            <div class="form-group pt-3">
+              <label for="LastName">Last Name</label>
+              <input type="text" class="form-control" name="LastName" id="LastName" placeholder="Enter Last name" value="Sussy">
+            </div>
+            <div class="form-group pt-3">
+              <label for="MobileNumber">Phone number</label>
+              <input type="text" class="form-control" name="MobileNumber" id="MobileNumber" placeholder="Enter your phone number" value="91234530">
+            </div>
+            <div class="form-group pt-3">
+              <label for="Password">Password</label>
+              <input type="text" class="form-control" name="Password" id="Password" placeholder="Enter drop off location" value="password">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+          </div>
+<div id="message"></div>
+</body>
+<script>
+$(".container").hide();
+$("#GET").show();
+</script>
+</html>
