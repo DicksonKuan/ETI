@@ -1,0 +1,65 @@
+DROP DATABASE RideShare
+
+CREATE DATABASE RideShare
+
+USE RideShare;
+
+
+DROP TABLE IF EXISTS Trip;
+DROP TABLE IF EXISTS Driver;
+DROP TABLE IF EXISTS Customer;
+
+CREATE TABLE Customer(
+  ID int(5) NOT NULL AUTO_INCREMENT,
+  FirstName varchar(255) NOT NULL,
+  LastName varchar(255) NOT NULL,
+  MobileNumber varchar(8) NOT NULL,
+  EmailAddress varchar(255) NOT NULL,
+  Password varchar(255) NOT NULL,
+  PRIMARY KEY(ID)
+);
+
+
+CREATE TABLE Driver(
+  DriverID varchar(255) NOT NULL UNIQUE,
+  FirstName varchar(255) NOT NULL,
+  LastName varchar(255) NOT NULL,
+  MobileNo varchar(8) NOT NULL,
+  EmailAddress varchar(255) NOT NULL,
+  Password varchar(255) NOT NULL,
+  CarLiscenseNo varchar(8) NOT NULL,
+  PRIMARY KEY (DriverID)
+);
+
+CREATE TABLE Trip(
+  TripID int NOT NULL AUTO_INCREMENT,
+  DriverID varchar(255) NOT NULL,
+  CustomerID int NOT NULL,
+  PickUpLocation varchar(255) NOT NULL,
+  DropOffLocation varchar(255) NOT NULL,
+  PickUpTime varchar(255) NOT NULL,
+  DropOffTime varchar(255) NOT NULL,
+  Status varchar(255) NOT NULL CHECK (Status IN ('Pending', 'On The Way', 'In Transit', 'Completed', 'Failed')),
+  PRIMARY KEY (TripID) 
+);
+
+
+INSERT INTO customer (FirstName, LastName, MobileNumber, EmailAddress, Password)
+VALUES("Susan","Wiki","91234568","Susan@np.com","password");
+INSERT INTO customer (FirstName, LastName, MobileNumber, EmailAddress, Password)
+VALUES("Willy","Wiki","91234569","Willy@np.com","password");
+
+INSERT INTO Driver (DriverID, CarLiscenseNo, FirstName, LastName, MobileNo, EmailAddress, Password) 
+VALUES("S1234567A","S123LO", "Ethan","Wiki","91234567","Ethan@np.com","password");
+INSERT INTO Driver (DriverID, CarLiscenseNo, FirstName, LastName, MobileNo, EmailAddress, Password) 
+VALUES("S1234567B","S124LO", "Elvan","Wiki","91234570","Elvan@np.com","password");
+INSERT INTO Driver (DriverID, CarLiscenseNo, FirstName, LastName, MobileNo, EmailAddress, Password) 
+VALUES("S1234567C","S125LO", "Azzi","Wiki","91234570","Azzi@np.com","password");
+
+INSERT INTO Trip (DriverID, CustomerID, PickupLocation, DropoffLocation, PickUpTime, DropOffTime, Status)
+VALUES("S1234567A",1,"123456", "123457", "12:30", "13:00", "Completed")
+
+INSERT INTO Trip (DriverID, CustomerID, PickupLocation, DropoffLocation, PickUpTime, DropOffTime, Status)
+VALUES("S1234567A",2,"123456", "123457", "12:30", " ", "Pending")
+
+"SELECT driver.DriverID FROM driver LEFT JOIN trip ON driver.DriverID = trip.DriverID WHERE trip.Status = 'Completed' OR trip.DriverID IS NULL"
