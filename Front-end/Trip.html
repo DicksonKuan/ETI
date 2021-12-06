@@ -84,18 +84,17 @@
             var table = $("<table><tr><th>"+method+"</th></tr>");
             if(method == "Get All Trips"){
               for(var k in result){
-                table.append("<tr><td>TripID:</td><td>" + result[k].TripID + "</td></tr>");
-                table.append("<tr><td>CustomerID:</td><td>" + result[k]["CustomerID"] + "</td></tr>");
-                table.append("<tr><td>DriverID:</td><td>" + result[k]["DriverID"] + "</td></tr>");
+                table.append("<tr><td>Car plate:</td><td>" + result[k].DriverCarPlate + "</td></tr>");
                 table.append("<tr><td>Pick up location:</td><td>" + result[k]["PickUpLocation"] + "</td></tr>");
                 table.append("<tr><td>Drop off location:</td><td>" + result[k]["DropOffLocation"] + "</td></tr>");
-                table.append("<tr><td>Pick up location:</td><td>" + result[k]["PickUpTime"] + "</td></tr>");
+                table.append("<tr><td>Pick up time:</td><td>" + result[k]["PickUpTime"] + "</td></tr>");
                 var DropOffTime = "Null"
                 if(result[k]["DropOffTime"] != " "){
                   DropOffTime = result[k]["DropOffTime"]
                 }
                 table.append("<tr><td>Drop Off Time:</td><td>" + DropOffTime + "</td></tr>");
                 table.append("<tr><td>Status:</td><td>" + result[k]["Status"] + "</td></tr>");
+                $("#message").html(table);
               }
             }else if (method == "Get Trips"){
               table.append("<tr><td>TripID:</td><td>" + result.TripID + "</td></tr>");
@@ -110,8 +109,9 @@
               }
               table.append("<tr><td>Drop Off Time:</td><td>" + DropOffTime + "</td></tr>");
               table.append("<tr><td>Status:</td><td>" + result["Status"] + "</td></tr>");
+              $("#message").html(table);
             }
-            $("#message").html(table);
+            $("#message").show();
         },
         error: function (xhr, status, error) {
           $("#message").empty();
@@ -147,7 +147,7 @@
     <form onsubmit="APIRouter('Get Trips','GET',this);">
         <div class="form-group pt-3">
           <label for="TripID">Trip ID</label>
-          <input type="text" class="form-control" name="TripID" id="TripID" placeholder="Enter tripID">
+          <input type="text" class="form-control" name="TripID" id="TripID" placeholder="Enter tripID" value=1>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
@@ -156,8 +156,8 @@
       <h1>GET All passenger trips</h1>
       <form onsubmit="APIRouter('Get All Trips','GET',this);">
           <div class="form-group pt-3">
-            <label for="CustomerID">Customer ID</label>
-            <input type="text" class="form-control" name="CustomerID" id="CustomerID" placeholder="Enter PassengerID">
+            <label for="Email">Customer Email</label>
+            <input type="text" class="form-control" name="Email" id="Email" placeholder="Enter Customer Email" value="Susan@np.com">
           </div>
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>

@@ -2,7 +2,7 @@
 curl http://localhost:3000/api/v1/Trip
 
 //GET all Trip
-curl http://localhost:3000/api/v1/Trip/1?key=2c78afaf-97da-4816-bbee-9ad239abb296
+curl http://localhost:3000/api/v1/Trip/Susan@np.com?key=2c78afaf-97da-4816-bbee-9ad239abb296
 
 //GET
 curl http://localhost:3000/api/v1/Trip/Router/1?key=2c78afaf-97da-4816-bbee-9ad239abb296

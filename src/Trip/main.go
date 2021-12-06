@@ -34,6 +34,15 @@ type Data struct { //Structure to get neccasry input from front end
 	DropOffTime     string `json: "DropOffTime"`
 }
 
+type AllTrip struct {
+	DriverCarPlate  string `json: "CarPlate"`
+	PickUpLocation  string `json: "PickUpLocation"`
+	DropOffLocation string `json: "DropOffLocation"`
+	PickUpTime      string `json: "PickUpTime"`
+	DropOffTime     string `json: "DropOffTime"`
+	Status          string `json: "Status"`
+}
+
 //Database function
 func CheckTrip(db *sql.DB, CustomerID int, DriverID string) bool {
 	//To check if there is any uncompleted trips
@@ -183,7 +192,7 @@ func validKey(r *http.Request) bool {
 		return false
 	}
 }
-func CheckCustomer(Email string, UserType string) int {
+func CheckCustomer(Email string) int {
 	//Check Customer exsist in the database
 	URL := "http://localhost:5000/api/v1/CheckUser/" + Email
 
@@ -209,7 +218,29 @@ func CheckCustomer(Email string, UserType string) int {
 	}
 	return 0
 }
-func CheckDriver(Email string, UserType string) string {
+func GetDriverPlate(DriverID string) string {
+	//Check Customer exsist in the database
+	URL := "http://localhost:4000/api/v1/GetDriverPlate/" + DriverID
+
+	response, err := http.Get(URL)
+	if err != nil {
+		fmt.Print(err.Error())
+		return ""
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	} else if response.StatusCode == http.StatusCreated {
+		responseData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			println(err)
+		} else {
+			return string(responseData)
+		}
+	}
+	return ""
+}
+func CheckDriver(Email string) string {
 	URL := "http://localhost:4000/api/v1/CheckUser/" + Email
 	response, err := http.Get(URL)
 	if err != nil {
@@ -309,7 +340,7 @@ func APIRouter(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 					var newTrip Trip
-					newTrip.CustomerID = CheckCustomer(newTripData.CustomerEmail, "Customer") //Check if user is in database
+					newTrip.CustomerID = CheckCustomer(newTripData.CustomerEmail) //Check if user is in database
 					if newTrip.CustomerID == 0 {
 						w.WriteHeader(http.StatusUnprocessableEntity)
 						w.Write([]byte("Customer account not found"))
@@ -395,43 +426,32 @@ func GetAllTrips(w http.ResponseWriter, r *http.Request) {
 	}
 	params := mux.Vars(r)
 
-	if params["CustomerID"] == "" { // Check if data is empty
+	if params["Email"] == "" { // Check if data is empty
 		w.WriteHeader(
 			http.StatusUnprocessableEntity)
-		w.Write([]byte(
-			"There is no trip session"))
+		w.Write([]byte("Please provide valid email"))
 		return
 	} else {
-		CustomerID, err := strconv.Atoi(params["CustomerID"])
-		if err != nil {
-			fmt.Println(err)
+		CustomerID := CheckCustomer(params["Email"])
+		if CustomerID != 0 {
+			TripData := GetTrips(db, CustomerID)
+			var JSONObject []AllTrip
+			for _, data := range TripData {
+				var TempAllTripData = AllTrip{PickUpLocation: data.PickUpLocation, DropOffLocation: data.DropOffLocation,
+					PickUpTime: data.PickUpTime, DropOffTime: data.DropOffTime,
+					Status: data.Status, DriverCarPlate: GetDriverPlate(data.DriverID)}
+				JSONObject = append(JSONObject, TempAllTripData)
+			}
+
+			json.NewEncoder(w).Encode(JSONObject)
+			w.WriteHeader(http.StatusAccepted)
 		}
-		json.NewEncoder(w).Encode(GetTrips(db, CustomerID))
-		w.WriteHeader(http.StatusAccepted)
+
 		return
 	}
 }
 
 func main() {
-	// //Database
-	// db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// var trip Trip
-	// //Dummy data
-	// trip.TripID = 3
-	// trip.DriverID = 3
-	// trip.CustomerID = 1
-	// trip.PickUpLocation = "123456"
-	// trip.DropOffLocation = "123457"
-	// trip.PickUpTime = "14:00"
-	// trip.DropOffTime = "15:00"
-	// trip.Status = "Completed"
-	//println(GetTrip(db, trip.TripID).Status) - working
-	//println(CreateTrip(db, trip)) - working
-	//println(EditTrip(db, trip)) - working
-
 	//API
 	router := mux.NewRouter()
 	//Web front-end CORS
@@ -440,7 +460,7 @@ func main() {
 	origins := handlers.AllowedOrigins([]string{"*"})
 	router.HandleFunc("/api/v1/Trip", home)                                                    //Test API
 	router.HandleFunc("/api/v1/Trip/Router/{TripID}", APIRouter).Methods("GET", "PUT", "POST") //API Manipulation
-	router.HandleFunc("/api/v1/Trip/{CustomerID}", GetAllTrips)
+	router.HandleFunc("/api/v1/Trip/{Email}", GetAllTrips)
 
 	fmt.Println("Listening at port 3000")
 	log.Fatal(http.ListenAndServe(":3000", handlers.CORS(headers, methods, origins)(router)))

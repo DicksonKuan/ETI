@@ -19,6 +19,7 @@ Dickson, S10192803
 - Security
 * With security as one of the main concern I have added a password for the user account to ensure whoever is accessing the SQL is a valid user. 
 * With the 3 microservices communicating with each other via API, this restrict the amount of data they are able to gather from each database. 
+* Users would only access their account through their email and password. This does not apply to trip
 
 - Format of REST API URL
 * The API has the domain, API, Version, Services and Resource to allow user to quickly idenitfy which URL they need to access 

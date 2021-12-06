@@ -258,42 +258,9 @@ func CheckCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func main() {
-	// // //Database
-	// db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// var customer Customer
-	// //Dummy data
-	// customer.EmailAddress = "lily@gmail.com"
-	// customer.FirstName = "Pika"
-	// customer.LastName = "John"
-	// customer.MobileNumber = "91234568"
-	// customer.Password = "password"
-
-	// //To get User
-	// customer = GetUser(db, "John@np.com", "password") - Working
-	// println(string(JsonResult)) - Working
-	// To CREATE new user
-	//CreateNewUser(db, customer) - Working
-	//To UPDATE User
-	//println(EditUser(db, customer)) - Working
-
-	//jSON serlised
-	// JsonResult, err := json.Marshal(
-	// 	Customer{
-	// 		ID:           customer.ID,
-	// 		FirstName:    customer.FirstName,
-	// 		LastName:     customer.LastName,
-	// 		EmailAddress: customer.EmailAddress,
-	// 		Password:     customer.Password})
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// println(string(JsonResult))
-
 	//API part
 	router := mux.NewRouter()
+	//Web Front-end CORS
 	headers := handlers.AllowedHeaders([]string{"X-REQUESTED-With", "Content-Type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT"})
 	origins := handlers.AllowedOrigins([]string{"*"})

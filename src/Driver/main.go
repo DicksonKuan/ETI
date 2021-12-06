@@ -268,6 +268,39 @@ func CheckDriver(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetDriverByID(w http.ResponseWriter, r *http.Request) {
+	//Database
+	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
+	if err != nil {
+		fmt.Println(err)
+	}
+	params := mux.Vars(r)
+	if params["DriverID"] == "" {
+		w.WriteHeader(
+			http.StatusUnprocessableEntity)
+		w.Write([]byte("422 - Please supply Driver ID"))
+		return
+	} else {
+		println(params["DriverID"])
+		query := fmt.Sprintf("Select CarLiscenseNo FROM Driver WHERE DriverID= '%s'", params["DriverID"])
+		results, err := db.Query(query)
+		if err != nil {
+			panic(err.Error())
+		}
+		var DriverNumPlate string
+		for results.Next() {
+			// map this type to the record in the table
+			err = results.Scan(&DriverNumPlate)
+			if err != nil {
+				panic(err.Error())
+			}
+		}
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(DriverNumPlate))
+		return
+	}
+}
+
 func GetAllDriver(w http.ResponseWriter, r *http.Request) {
 	//Database
 	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
@@ -279,23 +312,6 @@ func GetAllDriver(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// //Database
-	// db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// var driver Driver
-	// //Dummy data
-	// driver.EmailAddress = "lily@gmail.com"
-	// driver.FirstName = "YuEn"
-	// driver.LastName = "John"
-	// driver.MobileNumber = "91234568"
-	// driver.Password = "password"
-	// driver.CarLicenseNumber = "S101II"
-	// driver.ID = 2
-	//println(GetUser(db, "lily@gmail.com", "password").FirstName) - working
-	//CreateNewUser(db, driver) - Working
-	//println(EditUser(db, driver)) - Working
 
 	//API part
 	router := mux.NewRouter()
@@ -305,6 +321,7 @@ func main() {
 	origins := handlers.AllowedOrigins([]string{"*"})
 	router.HandleFunc("/api/v1/GetAllDriver", GetAllDriver)                                                //Get All driver
 	router.HandleFunc("/api/v1/CheckUser/{UserEmail}", CheckDriver)                                        //Check Driver exsist
+	router.HandleFunc("/api/v1/GetDriverPlate/{DriverID}", GetDriverByID)                                  //Check Driver exsist
 	router.HandleFunc("/api/v1/Driver", home)                                                              //Test API
 	router.HandleFunc("/api/v1/Driver/Router/{Email}/{Password}", APIRouter).Methods("GET", "PUT", "POST") //API Manipulation
 
