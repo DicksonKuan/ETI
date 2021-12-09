@@ -48,15 +48,21 @@ function APIRouter(method, type, form) {
   const FormDataValue = new FormData(form); //Collect form data
   var obj;
   var url;
-  if(type == "GET"){
+  if(method=="GetAllTrips"){
+    //Get Trip using Customer Email
+    for(let [name, value] of FormDataValue) {
+      url = "http://localhost:3000/api/v1/Trip/"+value+"?key=2c78afaf-97da-4816-bbee-9ad239abb296";
+    }
+  }else if(method == "POSTTrip"){
+    obj = JSON.stringify(Object.fromEntries(FormDataValue)); //Convert to JSON
+    url = "http://localhost:3000/api/v1/Trip/Router/0?key=2c78afaf-97da-4816-bbee-9ad239abb296";
+  }else if(type == "GET"){
     var email, password;
     for(let [name, value] of FormDataValue) {
       if(name == "Email"){email = value}
       else{password = value}
     }
-    console.log(password)
     url = "http://localhost:5000/api/v1/Passenger/Router/"+email+"/"+password+"?key=2c78afaf-97da-4816-bbee-9ad239abb296";
-    console.log(url);
   }else if(type == "POST" || type == "PUT"){
     obj = JSON.stringify(Object.fromEntries(FormDataValue)); //Convert to JSON
     url = "http:localhost:5000/api/v1/Passenger/Router/ / ?key=2c78afaf-97da-4816-bbee-9ad239abb296"
@@ -69,12 +75,30 @@ function APIRouter(method, type, form) {
       contentType: "application/json",
       success: function (result, status, xhr) {
           var table = $("<table><tr><th>"+method+"</th></tr>");
-          if (type == "GET"){
-            table.append("<tr><td>CustomerID:</td><td>" + result.CustomerID + "</td></tr>");
-            table.append("<tr><td>First Name:</td><td>" + result["FirstName"] + "</td></tr>");
-            table.append("<tr><td>Last Name:</td><td>" + result["LastName"] + "</td></tr>");
-            table.append("<tr><td>Phone number:</td><td>" + result["MobileNumber"] + "</td></tr>");
-            table.append("<tr><td>Password:</td><td>" + result["Password"] + "</td></tr>");
+          if (method == "GetAllTrips"){
+            for(var k in result){
+              table.append("<tr><td>Car plate:</td><td>" + result[k].DriverCarPlate + "</td></tr>");
+              table.append("<tr><td>Pick up location:</td><td>" + result[k]["PickUpLocation"] + "</td></tr>");
+              table.append("<tr><td>Drop off location:</td><td>" + result[k]["DropOffLocation"] + "</td></tr>");
+              table.append("<tr><td>Pick up time:</td><td>" + result[k]["PickUpTime"] + "</td></tr>");
+              var DropOffTime = "Null"
+              if(result[k]["DropOffTime"] != " "){
+                DropOffTime = result[k]["DropOffTime"]
+              }
+              table.append("<tr><td>Drop Off Time:</td><td>" + DropOffTime + "</td></tr>");
+              table.append("<tr><td>Status:</td><td>" + result[k]["Status"] + "</td></tr>");
+            }
+            $("#message").html(table);
+            $("#message").show();
+
+          }else if (type == "GET"){
+            //To welcome the user
+            var table = $("<table><tr><th>Welcome "+result.FirstName+"</th></tr>");
+            //Hide the option to login
+            $("#TripsOptions option[value='GET']").hide();
+            $("#TripsOptions").val("POST");
+            $("#GET").hide();
+            $(".CustomerEmailAddress").val(result.EmailAddress)
           }
           $("#message").html(table);
       },
@@ -100,15 +124,60 @@ function ChangeForm(optionValue){
 </script>
 <body>
   <select id="TripsOptions" onchange="ChangeForm(this)">
-    <option value="GET" selected="selected">Get Customer</option>
-    <option value="POST">Create Customer</option>
-    <option value="PUT">Update Customer</option>
+    <option value="GET" selected="selected">Customer Login</option>
+    <option value="POST">Register Customer</option>
+    <option value="PUT">Update Customer Account</option>
+    <option value="GetAllTrips">Get Trip History</option>
+    <option value="POSTTrip">Book Trip</option>
   </select>
 
-  <div class='container pt-5' id="GET">
-    <h1>Get Customer</h1>
-    <p>Get Customer by email and password</p>
-    <form onsubmit="APIRouter('Get customer','GET',this);">
+    <!-- Trip API -->
+
+    <!-- Trip history -->
+    <div class='container pt-5' id="GetAllTrips">
+      <h1>Trip history</h1>
+      <form onsubmit="APIRouter('GetAllTrips','GET',this);">
+          <div class="form-group pt-3">
+            <label for="Email">Customer Email</label>
+            <input type="text" class="form-control" name="Email" id="Email" placeholder="Enter Customer Email" value="Susan@np.com">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <!-- Create Trip booking -->
+    <div class='container pt-5' id="POSTTrip">
+      <h1>Book trips</h1>
+      <form onsubmit="APIRouter('POSTTrip','POST',this);">
+          <div class="form-group pt-3">
+            <label for="CustomerEmail">Customer Email</label>
+            <input type="text" class="form-control CustomerEmailAddress" name="CustomerEmail" id="CustomerEmail" placeholder="Enter customer email" readonly>
+          </div>
+          <div class="form-group pt-3">
+            <label for="PickUpLocation">Pick Up Location</label>
+            <input type="text" class="form-control" name="PickUpLocation" id="PickUpLocation" placeholder="Enter pick up location" value="1234567">
+          </div>
+          <div class="form-group pt-3">
+            <label for="DropOffLocation">Drop off Location</label>
+            <input type="text" class="form-control" name="DropOffLocation" id="DropOffLocation" placeholder="Enter drop off location" value="1234568">
+          </div>
+          <div class="form-group pt-3">
+            <label for="PickUpTime">Pick Up timing</label>
+            <input type="text" class="form-control" name="PickUpTime" id="PickUpTime" placeholder="Enter pick up timing" value="22:00">
+          </div>
+          <div class="form-group pt-3">
+            <label for="DropOffTime">Drop off timing</label>
+            <input type="text" class="form-control" name="DropOffTime" id="DropOffTime" placeholder="Enter drop off location" value="23:00">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+
+    <!-- Customer API -->
+    <div class='container pt-5' id="GET">
+      <h1>Customer Login</h1>
+      <p>Get Customer by email and password</p>
+      <form onsubmit="APIRouter('Login','GET',this);">
         <div class="form-group pt-3">
           <label for="Email">Customer Email</label>
           <input type="text" class="form-control" name="Email" id="Email" placeholder="Enter Email" value="Susan@np.com">
@@ -121,62 +190,63 @@ function ChangeForm(optionValue){
       </form>
     </div>
 
-      <div class='container pt-5' id="POST">
-        <h1>Create Customer</h1>
-        <form onsubmit="APIRouter('Create Customer','POST',this);">
-            <div class="form-group pt-3">
-              <label for="EmailAddress">Customer Email</label>
-              <input type="text" class="form-control" name="EmailAddress" id="EmailAddress" placeholder="Enter Email" value ="Johnson@np.com">
-            </div>
-            <div class="form-group pt-3">
-              <label for="FirstName">First Name</label>
-              <input type="text" class="form-control" name="FirstName" id="FirstName" placeholder="Enter your first name" value="Johsnon">
-            </div>
-            <div class="form-group pt-3">
-              <label for="LastName">Last Name</label>
-              <input type="text" class="form-control" name="LastName" id="LastName" placeholder="Enter Last name" value="Sussy">
-            </div>
-            <div class="form-group pt-3">
-              <label for="MobileNumber">Phone number</label>
-              <input type="text" class="form-control" name="MobileNumber" id="MobileNumber" placeholder="Enter your phone number" value="91234530">
-            </div>
-            <div class="form-group pt-3">
-              <label for="Password">Password</label>
-              <input type="text" class="form-control" name="Password" id="Password" placeholder="Enter drop off location" value="password">
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </form>
-        </div>
-
-        <div class='container pt-5' id="PUT">
-          <h1>Update Customer</h1>
-          <form onsubmit="APIRouter('Update Customer','PUT',this);">
-            <div class="form-group pt-3">
-              <label for="EmailAddress">Customer Email</label>
-              <input type="text" class="form-control" name="EmailAddress" id="EmailAddress" placeholder="Enter Email" value ="Johnson@np.com">
-            </div>
-            <div class="form-group pt-3">
-              <label for="FirstName">First Name</label>
-              <input type="text" class="form-control" name="FirstName" id="FirstName" placeholder="Enter your first name" value="John">
-            </div>
-            <div class="form-group pt-3">
-              <label for="LastName">Last Name</label>
-              <input type="text" class="form-control" name="LastName" id="LastName" placeholder="Enter Last name" value="Sussy">
-            </div>
-            <div class="form-group pt-3">
-              <label for="MobileNumber">Phone number</label>
-              <input type="text" class="form-control" name="MobileNumber" id="MobileNumber" placeholder="Enter your phone number" value="91234530">
-            </div>
-            <div class="form-group pt-3">
-              <label for="Password">Password</label>
-              <input type="text" class="form-control" name="Password" id="Password" placeholder="Enter drop off location" value="password">
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </form>
+    <div class='container pt-5' id="POST">
+      <h1>Create Customer</h1>
+      <form onsubmit="APIRouter('Create Customer','POST',this);">
+          <div class="form-group pt-3">
+            <label for="EmailAddress">Customer Email</label>
+            <input type="text" class="form-control" name="EmailAddress" id="EmailAddress" placeholder="Enter Email" value ="Johnson@np.com">
           </div>
+          <div class="form-group pt-3">
+            <label for="FirstName">First Name</label>
+            <input type="text" class="form-control" name="FirstName" id="FirstName" placeholder="Enter your first name" value="Johsnon">
+          </div>
+          <div class="form-group pt-3">
+            <label for="LastName">Last Name</label>
+            <input type="text" class="form-control" name="LastName" id="LastName" placeholder="Enter Last name" value="Sussy">
+          </div>
+          <div class="form-group pt-3">
+            <label for="MobileNumber">Phone number</label>
+            <input type="text" class="form-control" name="MobileNumber" id="MobileNumber" placeholder="Enter your phone number" value="91234530">
+          </div>
+          <div class="form-group pt-3">
+            <label for="Password">Password</label>
+            <input type="text" class="form-control" name="Password" id="Password" placeholder="Enter drop off location" value="password">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+
+      <div class='container pt-5' id="PUT">
+        <h1>Update Customer</h1>
+        <form onsubmit="APIRouter('Update Customer','PUT',this);">
+          <div class="form-group pt-3">
+            <label for="EmailAddress">Customer Email</label>
+            <input type="text" class="form-control" name="EmailAddress" id="EmailAddress" placeholder="Enter Email" value ="Johnson@np.com">
+          </div>
+          <div class="form-group pt-3">
+            <label for="FirstName">First Name</label>
+            <input type="text" class="form-control" name="FirstName" id="FirstName" placeholder="Enter your first name" value="John">
+          </div>
+          <div class="form-group pt-3">
+            <label for="LastName">Last Name</label>
+            <input type="text" class="form-control" name="LastName" id="LastName" placeholder="Enter Last name" value="Sussy">
+          </div>
+          <div class="form-group pt-3">
+            <label for="MobileNumber">Phone number</label>
+            <input type="text" class="form-control" name="MobileNumber" id="MobileNumber" placeholder="Enter your phone number" value="91234530">
+          </div>
+          <div class="form-group pt-3">
+            <label for="Password">Password</label>
+            <input type="text" class="form-control" name="Password" id="Password" placeholder="Enter drop off location" value="password">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        </div>
 <div id="message"></div>
 </body>
 <script>
+//Hide all except customer login
 $(".container").hide();
 $("#GET").show();
 </script>
