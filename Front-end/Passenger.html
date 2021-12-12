@@ -76,7 +76,9 @@ function APIRouter(method, type, form) {
       success: function (result, status, xhr) {
           var table = $("<table><tr><th>"+method+"</th></tr>");
           if (method == "GetAllTrips"){
+            var counter = 1
             for(var k in result){
+              table.append("<tr><td>Trip #:</td><td>" +counter+ "</td></tr>");
               table.append("<tr><td>Car plate:</td><td>" + result[k].DriverCarPlate + "</td></tr>");
               table.append("<tr><td>Pick up location:</td><td>" + result[k]["PickUpLocation"] + "</td></tr>");
               table.append("<tr><td>Drop off location:</td><td>" + result[k]["DropOffLocation"] + "</td></tr>");
@@ -87,6 +89,7 @@ function APIRouter(method, type, form) {
               }
               table.append("<tr><td>Drop Off Time:</td><td>" + DropOffTime + "</td></tr>");
               table.append("<tr><td>Status:</td><td>" + result[k]["Status"] + "</td></tr>");
+              counter++
             }
             $("#message").html(table);
             $("#message").show();
@@ -94,8 +97,15 @@ function APIRouter(method, type, form) {
           }else if (type == "GET"){
             //To welcome the user
             var table = $("<table><tr><th>Welcome "+result.FirstName+"</th></tr>");
-            //Hide the option to login
+            //Hide the option to login register
             $("#TripsOptions option[value='GET']").hide();
+            $("#TripsOptions option[value='POST']").hide();
+
+            //Showing the apporiate form
+            $('#TripsOptions option[value="PUT"]').show();
+            $('#TripsOptions option[value="GetAllTrips"]').show();
+            $('#TripsOptions option[value="POSTTrip"]').show();
+
             $("#TripsOptions").val("POST");
             $("#GET").hide();
             $(".CustomerEmailAddress").val(result.EmailAddress)
@@ -105,6 +115,20 @@ function APIRouter(method, type, form) {
       error: function (xhr, status, error) {
         $("#message").empty();
         if (type == "POST" || type == "PUT"){
+          type == "POST"{
+            //Hide the option to login register
+            $("#TripsOptions option[value='GET']").hide();
+            $("#TripsOptions option[value='POST']").hide();
+
+            //Showing the apporiate form
+            $('#TripsOptions option[value="PUT"]').show();
+            $('#TripsOptions option[value="GetAllTrips"]').show();
+            $('#TripsOptions option[value="POSTTrip"]').show();
+
+            $("#TripsOptions").val("POST");
+            $("#GET").hide();
+            $(".CustomerEmailAddress").val(result.EmailAddress)
+          }
           var table = $("<table><tr><th>"+xhr.responseText+"</th></tr>");
           $("#message").html(table);
         }
@@ -126,9 +150,9 @@ function ChangeForm(optionValue){
   <select id="TripsOptions" onchange="ChangeForm(this)">
     <option value="GET" selected="selected">Customer Login</option>
     <option value="POST">Register Customer</option>
-    <option value="PUT">Update Customer Account</option>
-    <option value="GetAllTrips">Get Trip History</option>
-    <option value="POSTTrip">Book Trip</option>
+    <option value="PUT">Update account</option>
+    <option value="GetAllTrips" >Get Trip History</option>
+    <option value="POSTTrip" >Book Trip</option>
   </select>
 
     <!-- Trip API -->
@@ -249,5 +273,10 @@ function ChangeForm(optionValue){
 //Hide all except customer login
 $(".container").hide();
 $("#GET").show();
+
+//To hide the other options
+$('#TripsOptions option[value="PUT"]').hide();
+$('#TripsOptions option[value="GetAllTrips"]').hide();
+$('#TripsOptions option[value="POSTTrip"]').hide();
 </script>
 </html>
