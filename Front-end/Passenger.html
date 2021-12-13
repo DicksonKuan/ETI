@@ -55,7 +55,7 @@ function APIRouter(method, type, form) {
     }
   }else if(method == "POSTTrip"){
     obj = JSON.stringify(Object.fromEntries(FormDataValue)); //Convert to JSON
-    url = "http://localhost:3000/api/v1/Trip/Router/0?key=2c78afaf-97da-4816-bbee-9ad239abb296";
+    url = "http://localhost:3000/api/v1/Trip/Customer/0?key=2c78afaf-97da-4816-bbee-9ad239abb296";
   }else if(type == "GET"){
     var email, password;
     for(let [name, value] of FormDataValue) {

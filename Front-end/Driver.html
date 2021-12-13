@@ -103,6 +103,7 @@ function APIRouter(method, type, form) {
         $("#message").empty();
         if (type == "POST" || type == "PUT"){
           var table = $("<table><tr><th>"+xhr.responseText+"</th></tr>");
+          //To hide and show the apporiate form for the apporiate functions
           if(method == "AcceptBooking"){
             $("#AcceptBooking").hide();
             $("#PickUpPassenger").show();
@@ -123,10 +124,10 @@ function APIRouter(method, type, form) {
   });
 };
 
-function GetAvailJobs(){
+function GetAvailJobs(DriverID){
   $.ajax({
       type: "GET",
-      url: "http://localhost:3000/api/v1/Trip/Driver/FindJob?key=2c78afaf-97da-4816-bbee-9ad239abb296",
+      url: "http://localhost:3000/api/v1/Trip/Driver/FindJob/"+DriverID+"?key=2c78afaf-97da-4816-bbee-9ad239abb296",
       contentType: "application/json",
       dataType: "json",
       success: function (result, status, xhr) {
@@ -154,7 +155,7 @@ function ChangeForm(optionValue){
   $("#message").hide();
   var content = "#"+optionValue.value;
   if(optionValue.value == "AcceptBooking"){
-    GetAvailJobs();
+    GetAvailJobs($(".DriverID").val());
   }
   $(content).show();
 };
