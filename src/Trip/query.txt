@@ -15,3 +15,6 @@ curl -H "Content-Type: application/json" -X PUT http://localhost:3000/api/v1/Tri
 
 //GET all trips
 curl http://localhost:3000/api/v1/Trip/1?key=2c78afaf-97da-4816-bbee-9ad239abb296
+
+//GET avail jobs
+curl http://localhost:3000/api/v1/Trip/CheckJobs?key=2c78afaf-97da-4816-bbee-9ad239abb296

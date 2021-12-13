@@ -57,9 +57,9 @@ INSERT INTO Driver (DriverID, CarLiscenseNo, FirstName, LastName, MobileNo, Emai
 VALUES("S1234567C","S125LO", "Azzi","Wiki","91234570","Azzi@np.com","password");
 
 INSERT INTO Trip (DriverID, CustomerID, PickupLocation, DropoffLocation, PickUpTime, DropOffTime, Status)
-VALUES("S1234567A",1,"123456", "123457", "12:30", "13:00", "Completed")
+VALUES("S1234567A",1,"123456", "123457", "12:30Pm", "13:00Pm", "Completed")
 
 INSERT INTO Trip (DriverID, CustomerID, PickupLocation, DropoffLocation, PickUpTime, DropOffTime, Status)
-VALUES("S1234567A",2,"123456", "123457", "12:30", " ", "Pending")
+VALUES("S1234567A",2,"123456", "123457", "", " ", "Pending")
 
 "SELECT driver.DriverID FROM driver LEFT JOIN trip ON driver.DriverID = trip.DriverID WHERE trip.Status = 'Completed' OR trip.DriverID IS NULL"

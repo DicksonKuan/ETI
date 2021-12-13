@@ -281,7 +281,6 @@ func GetDriverByID(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("422 - Please supply Driver ID"))
 		return
 	} else {
-		println(params["DriverID"])
 		query := fmt.Sprintf("Select CarLiscenseNo FROM Driver WHERE DriverID= '%s'", params["DriverID"])
 		results, err := db.Query(query)
 		if err != nil {

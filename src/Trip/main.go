@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	handlers "github.com/gorilla/handlers"
@@ -120,6 +121,7 @@ func GetTrip(db *sql.DB, ID int) Trip {
 }
 
 func GetTrips(db *sql.DB, CustomerID int) []Trip {
+	//To get all trips using customerID
 	query := fmt.Sprintf("Select * FROM Trip WHERE CustomerID = %d ORDER BY TripID DESC", CustomerID)
 	results, err := db.Query(query)
 	if err != nil {
@@ -138,7 +140,31 @@ func GetTrips(db *sql.DB, CustomerID int) []Trip {
 	return trips
 }
 
+func CheckAvailJobs(db *sql.DB, DriverID string) []Trip {
+	//To get all avail job
+	query := fmt.Sprintf("Select TripID, CustomerID, PickUpLocation, DropOffLocation, PickUpTime FROM Trip WHERE Status = '%s' AND DriverID = '%s'",
+		"Pending", DriverID)
+	results, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+	var trip Trip
+	var trips []Trip
+	for results.Next() {
+		// map this type to the record in the table
+		err = results.Scan(&trip.TripID, &trip.CustomerID, &trip.PickUpLocation,
+			&trip.DropOffLocation, &trip.PickUpTime)
+		if err != nil {
+			panic(err.Error())
+		} else {
+			trips = append(trips, trip)
+		}
+	}
+	return trips
+}
+
 func CreateTrip(db *sql.DB, trip Trip) bool {
+	//Create trips
 	query := fmt.Sprintf(
 		"INSERT INTO Trip (DriverID, CustomerID, PickupLocation, DropoffLocation, PickUpTime, DropOffTime, Status) VALUES('%s', %d, '%s', '%s', '%s', ' ', 'Pending')",
 		trip.DriverID,
@@ -155,6 +181,7 @@ func CreateTrip(db *sql.DB, trip Trip) bool {
 }
 
 func EditTrip(db *sql.DB, trip Trip) bool {
+	//Edit trip details
 	if trip.TripID == 0 {
 		return false
 	}
@@ -171,6 +198,55 @@ func EditTrip(db *sql.DB, trip Trip) bool {
 
 	if err != nil {
 		panic(err.Error())
+	}
+	return true
+}
+func CompleteBooking(db *sql.DB, DriverID string) bool {
+	//To complete the booking
+	if DriverID == "" {
+		return false
+	}
+	now := time.Now()
+	query := fmt.Sprintf("UPDATE Trip SET Status = 'Completed', DropOffTime = '%s' WHERE DriverID = '%s' AND Status = 'In Transit'",
+		now.Format(time.Kitchen), DriverID)
+	_, err := db.Query(query)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	return true
+}
+
+func DriverAcceptBooking(db *sql.DB, TripID int, DriverID string) bool {
+	//Update trip booking
+	println(TripID, DriverID)
+	if TripID == 0 || DriverID == "" {
+		return false
+	}
+	query := fmt.Sprintf("UPDATE Trip SET Status = 'On The Way', DriverID = '%s' WHERE TripID = %d AND Status = 'Pending'",
+		DriverID, TripID)
+	_, err := db.Query(query)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	return true
+}
+
+func PickUpCustomer(db *sql.DB, DriverID string) bool {
+	if DriverID == "" {
+		return false
+	}
+	now := time.Now()
+	query := fmt.Sprintf("UPDATE Trip SET Status = 'In Transit', PickUpTime = '%s' WHERE DriverID = '%s' AND Status = 'On The Way'",
+		now.Format(time.Kitchen), DriverID)
+	_, err := db.Query(query)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
 	}
 	return true
 }
@@ -219,7 +295,7 @@ func CheckCustomer(Email string) int {
 	return 0
 }
 func GetDriverPlate(DriverID string) string {
-	//Check Customer exsist in the database
+	//GET driver's car plate from Driver's database
 	URL := "http://localhost:4000/api/v1/GetDriverPlate/" + DriverID
 
 	response, err := http.Get(URL)
@@ -241,6 +317,7 @@ func GetDriverPlate(DriverID string) string {
 	return ""
 }
 func CheckDriver(Email string) string {
+	//To check if driver exsist in the database
 	URL := "http://localhost:4000/api/v1/CheckUser/" + Email
 	response, err := http.Get(URL)
 	if err != nil {
@@ -260,7 +337,9 @@ func CheckDriver(Email string) string {
 	}
 	return ""
 }
+
 func GetAllDriver() []string {
+	//To get all driver that is registered
 	response, err := http.Get("http://localhost:4000/api/v1/GetAllDriver")
 	if err != nil {
 		fmt.Print(err.Error())
@@ -302,7 +381,7 @@ func APIRouter(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		//GET trip using TripID
-		TripID, err := strconv.Atoi(params["TripID"])
+		TripID, err := strconv.Atoi(params["TripID"]) //Convert string to int
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -446,7 +525,100 @@ func GetAllTrips(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(JSONObject)
 			w.WriteHeader(http.StatusAccepted)
 		}
+		return
+	}
+}
 
+func CheckJobs(w http.ResponseWriter, r *http.Request) {
+	if !validKey(r) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("401 - Invalid key"))
+		return
+	}
+	//Database
+	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
+	if err != nil {
+		fmt.Println(err)
+	}
+	params := mux.Vars(r)
+	DriverID := params["DriverID"]
+	Trips := CheckAvailJobs(db, DriverID)
+	json.NewEncoder(w).Encode(Trips)
+	w.WriteHeader(http.StatusAccepted)
+}
+
+func AcceptJobs(w http.ResponseWriter, r *http.Request) {
+	if !validKey(r) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("401 - Invalid key"))
+		return
+	}
+	//Database
+	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
+	if err != nil {
+		fmt.Println(err)
+	}
+	params := mux.Vars(r)
+	TripID, err := strconv.Atoi(params["TripID"]) //Convert string to int
+	DriverID := params["DriverID"]
+	if err != nil {
+		fmt.Println(err)
+	}
+	if DriverAcceptBooking(db, TripID, DriverID) { // Check if data is empty
+		w.WriteHeader(http.StatusAccepted)
+		w.Write([]byte("Job accepted"))
+		return
+	} else {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write([]byte("Please provide a valid trip ID"))
+		return
+	}
+}
+
+func PickUpPassenger(w http.ResponseWriter, r *http.Request) {
+	if !validKey(r) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("401 - Invalid key"))
+		return
+	}
+	//Database
+	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
+	if err != nil {
+		fmt.Println(err)
+	}
+	params := mux.Vars(r)
+	DriverID := params["DriverID"]
+	if PickUpCustomer(db, DriverID) {
+		w.WriteHeader(http.StatusAccepted)
+		w.Write([]byte("Passenger Picked up"))
+		return
+	} else {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write([]byte("Please provide a valid Driver ID"))
+		return
+	}
+}
+
+func CompleteJobs(w http.ResponseWriter, r *http.Request) {
+	if !validKey(r) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("401 - Invalid key"))
+		return
+	}
+	//Database
+	db, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3308)/rideshare") //Connecting to database
+	if err != nil {
+		fmt.Println(err)
+	}
+	params := mux.Vars(r)
+	DriverID := params["DriverID"]
+	if CompleteBooking(db, DriverID) {
+		w.WriteHeader(http.StatusAccepted)
+		w.Write([]byte("Trip Completed!"))
+		return
+	} else {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write([]byte("Please provide a valid Driver ID"))
 		return
 	}
 }
@@ -458,10 +630,13 @@ func main() {
 	headers := handlers.AllowedHeaders([]string{"X-REQUESTED-With", "Content-Type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT"})
 	origins := handlers.AllowedOrigins([]string{"*"})
-	router.HandleFunc("/api/v1/Trip", home)                                                    //Test API
-	router.HandleFunc("/api/v1/Trip/Router/{TripID}", APIRouter).Methods("GET", "PUT", "POST") //API Manipulation
-	router.HandleFunc("/api/v1/Trip/{Email}", GetAllTrips)
-
+	router.HandleFunc("/api/v1/Trip", home)                                                               //Test API
+	router.HandleFunc("/api/v1/Trip/Customer/{TripID}", APIRouter).Methods("GET", "PUT", "POST")          //For admin
+	router.HandleFunc("/api/v1/Trip/{Email}", GetAllTrips).Methods("GET")                                 //To get all trips using Customer's Email
+	router.HandleFunc("/api/v1/Trip/Driver/FindJob/{DriverID}", CheckJobs).Methods("GET")                 //To check for avail jobs
+	router.HandleFunc("/api/v1/Trip/Driver/AcceptBooking/{TripID}/{DriverID}", AcceptJobs).Methods("PUT") //Driver Accept Booking
+	router.HandleFunc("/api/v1/Trip/Driver/PickUp/{DriverID}", PickUpPassenger).Methods("PUT")            //Driver PickUp Customer
+	router.HandleFunc("/api/v1/Trip/Driver/CompleteTrip/{DriverID}", CompleteJobs).Methods("PUT")         //Update Trip Progress to complete
 	fmt.Println("Listening at port 3000")
 	log.Fatal(http.ListenAndServe(":3000", handlers.CORS(headers, methods, origins)(router)))
 }
