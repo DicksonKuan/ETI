@@ -17,12 +17,14 @@ The microservices has been decomposed by their subdomain and business domain. As
 The trip domain is being defined by the context of both passengers and driver. As in the passenger context it would only able to manipulate or retrieve the Trip’s status, location and time for drop off and pick up, . Whereas driver would need to access the trip to view trip details and complete trips. 
 
 Functions
+
 Passenger 
 - Login passenger account (GET)
 - Create Passenger account (POST)
 - Edit Passenger account (PUT)
 - Book trip (POST)
 - View all trip (GET)
+
 Driver
 - Login Driver account (GET)
 - Create Driver account (POST)
