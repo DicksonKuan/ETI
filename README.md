@@ -32,7 +32,7 @@ Functions
 
 
 2. Architecture diagram
-![Architecture diagram](Pictures/ETI assignment 1-Diagram .jpg?raw=true)
+![Architecture diagram](images/image1.jpg)
 
 
 
