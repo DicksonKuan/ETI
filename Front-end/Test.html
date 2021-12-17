@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>GRAB</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Dosis:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+  #viewContent {
+      padding-left: 20px;
+  }
+
+      #viewContent select, #viewContent button {
+          font-size: 25px;
+      }
+
+      #viewContent h4 {
+          margin: 10px 0;
+      }
+
+      #viewContent .textAlignCenter {
+          text-align: center;
+      }
+
+          #viewContent .textAlignCenter img {
+              display: none;
+              width: 100px;
+          }
+
+      #viewContent #message table {
+          width: 100%;
+      }
+
+          #viewContent #message table th {
+              text-align: left;
+              text-decoration: underline;
+          }
+  </style>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<body>
+<script type="text/javascript">
+var table = $("<table><tr><th>Testing API</th></tr>");
+
+function APIRouter(url) {
+  $.ajax({
+      type: "GET",
+      url: url,
+      success: function (result, status, xhr) {
+        table.append("<table><tr><th>"+xhr.responseText+" is working</th></tr>");
+        $("#message").html(table);
+        $("#message").show();
+      },
+      error: function (xhr, status, error) {
+        var table = $("<table><tr><th>"+xhr.responseText+"</th></tr>");
+        $("#message").html(table);
+        $("#message").show();
+      }
+  });
+};
+</script>
+<div id="message"></div>
+</body>
+<script>
+//To test all API are working
+APIRouter("http://localhost:5000/api/v1/Passenger");
+APIRouter("http://localhost:3000/api/v1/Trip");
+APIRouter("http://localhost:4000/api/v1/Driver");
+
+</script>
+</html>
