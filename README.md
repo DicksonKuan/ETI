@@ -2,18 +2,33 @@
 Dickson, S10192803
 
 1. Design consideration
-The trip microservice uses Strategic domain-driven design. The Trip domain is in the centre of the digram as it is the core of the business as a ride sharing platform
+Front-end architecture
+	For the front-end I have chosen to use the component based front-end. To help simulate the component based, I have developed the front-end using forms, Ajax, jQuery, and drop-down list to simulate the component based. As the common component is the forms and the message. Therefore, the jQuery would handle when to hide and show the appropriate components. And the Ajax would be responsible for retrieving and sending the data through the API to the microservices while displaying the response in the message component.
+Anti-corruption layer
+	The anti-corruption layer was created as a layer in the microservice itself. One example is the API Router in passenger and driver’s microservice, as this layer would be in charge handling the raw data and translate the requests to the appropriate functions so that the database is able to retrieve the appropriate records. This layer checks if the value can convert to int, is valid and if it exists in the database.
+Decomposition & DDD
+	The microservices has been decomposed by their subdomain and business domain. As the core business domain is the ride sharing, therefore the trip domain will be in the center of the diagram while both passengers and drivers are loosely coupled with the trip domain. 
+	The trip domain is being defined by the context of both passengers and driver. As in the passenger context it would only able to manipulate or retrieve the Trip’s status, location and time for drop off and pick up, . Whereas driver would need to access the trip to view trip details and complete trips. 
 
-API Gateway design
-The ride sharing application would have different users accessing accross other microservices such as driver accessing the trip's microservices to update the the ride timing
+Functions
+	Passenger 
+	-	Login passenger account (GET)
+	-	Create Passenger account (POST)
+	-	Edit Passenger account (PUT)
+	-	Book trip (POST)
+	-	View all trip (GET)
+	Driver
+	-	Login Driver account (GET)
+	-	Create Driver account (POST)
+	-	Accept booking/ View job (GET/ PUT)
+	-	Pick up passenger (PUT)
+	-	Complete trip (PUT)
 
-Backend and frontend 
-Each services have different requirements. Therefore, there are three microservices to cater to three different domain which is trip, driver and customer.
 
-Decomposition
-The microservice is being 
 
 2. Architecture diagram
+![alt text](https://github.com/assets/Pictures/image.jpg?raw=true)
+
 
 
 3. Instructions for setting up and running the microservice
@@ -29,19 +44,22 @@ The microservice is being
 * Please do not insert all the SQL statement at once for SQL.txt
 - Click 'GO'
 
-3.2 Run API
+3.2 Installation
+- git clone https://https://github.com/DicksonKuan/ETI
+- go get -u github.com/go-sql-driver/mysql
+- go get -u github.com/gorilla/mux
+- go get -u github.com/gorilla/handlers
+
+3.2 Run & Test API
 - Launch command prompt and run
 * Trip folder, Main.go
 * Customer folder, Main.go
 * Driver folder, Main.go
-
-3.3 Test API
-- Run html files
-* Front-end folder > Trip/passenger/ driver.html
+- Test HTML
 
 Lib and platform used
-1. https://github.com/gorilla/mux
-2. XAMPP
-3. https://github.com/gorilla/handlers
-4. Visual studio code
-5. https://github.com/go-sql-driver/mysql
+- https://github.com/gorilla/mux
+- https://github.com/gorilla/handlers
+- https://github.com/go-sql-driver/mysql
+- XAMPP
+- Visual studio code
