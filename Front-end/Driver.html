@@ -43,6 +43,19 @@
 </head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script type="text/javascript">
+function HideLogin(){
+  $("#TripsOptions").val("PUT");
+
+  //Hide the option to login register
+  $("#TripsOptions option[value='GET']").hide();
+  $("#TripsOptions option[value='POST']").hide();
+
+  //Showing the apporiate form
+  $('#TripsOptions option[value="PUT"]').show();
+  $('#TripsOptions option[value="GetAllTrips"]').show();
+  $('#TripsOptions option[value="AcceptBooking"]').show();
+}
+
 function APIRouter(method, type, form) {
   event.preventDefault();                   //Prevent refreshing webpage
   const FormDataValue = new FormData(form); //Collect form data
@@ -69,7 +82,7 @@ function APIRouter(method, type, form) {
     }
   }else if(method == "CompleteTrip"){
     for(let [name, value] of FormDataValue) {
-      url = "http://localhost:3000/api/v1/Driver/Trip/CompleteTrip/"+value+"?key=2c78afaf-97da-4816-bbee-9ad239abb296";
+      url = "http://localhost:3000/api/v1/Trip/Driver/CompleteTrip/"+value+"?key=2c78afaf-97da-4816-bbee-9ad239abb296";
     }
   }else if(type == "POST" || type == "PUT"){
     obj = JSON.stringify(Object.fromEntries(FormDataValue)); //Convert to JSON
@@ -83,18 +96,9 @@ function APIRouter(method, type, form) {
       contentType: "application/json",
       success: function (result, status, xhr) {
           var table = $("<table><tr><th>"+method+"</th></tr>");
+          table.append("<tr><td>Welcome: </td><td>" + result.FirstName  + "</td></tr>");
+          HideLogin()
           if (type == "GET"){
-            table.append("<tr><td>Welcome: </td><td>" + result.FirstName  + "</td></tr>");
-            //Hide the option to login register
-            $("#TripsOptions option[value='GET']").hide();
-            $("#TripsOptions option[value='POST']").hide();
-
-            //Showing the apporiate form
-            $('#TripsOptions option[value="PUT"]').show();
-            $('#TripsOptions option[value="GetAllTrips"]').show();
-            $('#TripsOptions option[value="AcceptBooking"]').show();
-
-            $("#TripsOptions").val("POST");
             $(".DriverID").val(result.DriverID)
           }
           $("#message").html(table);
@@ -113,6 +117,8 @@ function APIRouter(method, type, form) {
           }else if(method == "CompleteTrip"){
             $("#CompleteTrip").hide();
             $("#AcceptBooking").show();
+          }else if (method == "Create Driver"){
+            HideLogin();
           }
           $("#message").html(table);
         }
@@ -225,7 +231,7 @@ function ChangeForm(optionValue){
     <form onsubmit="APIRouter('Update Driver','PUT',this);">
       <div class="form-group pt-3">
         <label for="DriverID">Driver ID</label>
-        <input type="text" class="form-control" name="DriverID" id="DriverID" placeholder="Enter ID" readonly>
+        <input type="text" class="form-control DriverID" name="DriverID" id="DriverID" placeholder="Enter ID" readonly>
       </div>
       <div class="form-group pt-3">
         <label for="EmailAddress">Driver Email</label>

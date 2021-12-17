@@ -115,7 +115,7 @@ function APIRouter(method, type, form) {
       error: function (xhr, status, error) {
         $("#message").empty();
         if (type == "POST" || type == "PUT"){
-          type == "POST"{
+          if(type == "POST"){
             //Hide the option to login register
             $("#TripsOptions option[value='GET']").hide();
             $("#TripsOptions option[value='POST']").hide();
@@ -127,7 +127,6 @@ function APIRouter(method, type, form) {
 
             $("#TripsOptions").val("POST");
             $("#GET").hide();
-            $(".CustomerEmailAddress").val(result.EmailAddress)
           }
           var table = $("<table><tr><th>"+xhr.responseText+"</th></tr>");
           $("#message").html(table);
