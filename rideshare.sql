@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3308
--- Generation Time: Dec 05, 2021 at 01:56 PM
+-- Generation Time: Dec 17, 2021 at 09:12 AM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 7.3.31
 
@@ -41,8 +41,9 @@ CREATE TABLE `customer` (
 --
 
 INSERT INTO `customer` (`ID`, `FirstName`, `LastName`, `MobileNumber`, `EmailAddress`, `Password`) VALUES
-(1, 'Susan', 'Wiki', '91234568', 'Susan@np.com', 'password'),
-(2, 'Willy', 'Wiki', '91234569', 'Willy@np.com', 'password');
+(1, 'John', 'Sussies', '91234530', 'Susan@np.com', 'password'),
+(2, 'Willy', 'Wiki', '91234569', 'Willy@np.com', 'password'),
+(3, 'Johsnon', 'Sussy', '91234530', 'Johnson@np.com', 'password');
 
 -- --------------------------------------------------------
 
@@ -92,7 +93,8 @@ CREATE TABLE `trip` (
 
 INSERT INTO `trip` (`TripID`, `DriverID`, `CustomerID`, `PickUpLocation`, `DropOffLocation`, `PickUpTime`, `DropOffTime`, `Status`) VALUES
 (1, 'S1234567A', 1, '123456', '123457', '12:30', '13:00', 'Completed'),
-(2, 'S1234567A', 2, '123456', '123457', '12:30', ' ', 'Pending');
+(2, 'S1234567A', 2, '123456', '123457', '8:35PM', '8:45PM', 'Completed'),
+(3, 'S1234567B', 1, '1234567', '1234568', '22:00', ' ', 'Pending');
 
 --
 -- Indexes for dumped tables
@@ -125,13 +127,13 @@ ALTER TABLE `trip`
 -- AUTO_INCREMENT for table `customer`
 --
 ALTER TABLE `customer`
-  MODIFY `ID` int(5) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `ID` int(5) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `trip`
 --
 ALTER TABLE `trip`
-  MODIFY `TripID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `TripID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
