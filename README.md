@@ -14,21 +14,21 @@ Decomposition & DDD
 
 The microservices has been decomposed by their subdomain and business domain. As the core business domain is the ride sharing, therefore the trip domain will be in the center of the diagram while both passengers and drivers are loosely coupled with the trip domain. 
 	
-	The trip domain is being defined by the context of both passengers and driver. As in the passenger context it would only able to manipulate or retrieve the Trip’s status, location and time for drop off and pick up, . Whereas driver would need to access the trip to view trip details and complete trips. 
+The trip domain is being defined by the context of both passengers and driver. As in the passenger context it would only able to manipulate or retrieve the Trip’s status, location and time for drop off and pick up, . Whereas driver would need to access the trip to view trip details and complete trips. 
 
 Functions
-	Passenger 
-	- Login passenger account (GET)
-	- Create Passenger account (POST)
-	- Edit Passenger account (PUT)
-	- Book trip (POST)
-	- View all trip (GET)
-	Driver
-	- Login Driver account (GET)
-	- Create Driver account (POST)
-	- Accept booking/ View job (GET/ PUT)
-	- Pick up passenger (PUT)
-	- Complete trip (PUT)
+Passenger 
+- Login passenger account (GET)
+- Create Passenger account (POST)
+- Edit Passenger account (PUT)
+- Book trip (POST)
+- View all trip (GET)
+Driver
+- Login Driver account (GET)
+- Create Driver account (POST)
+- Accept booking/ View job (GET/ PUT)
+- Pick up passenger (PUT)
+- Complete trip (PUT)
 
 
 2. Architecture diagram
